@@ -97,7 +97,7 @@ def login(
 
 @router.get("/profile")
 def profile(
-    current_user: user = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     return {
         "id": current_user.id,
