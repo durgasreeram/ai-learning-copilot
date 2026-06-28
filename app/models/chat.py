@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from app.database.database import Base 
 
+
 class Chat(Base):
 
     __tablename__ = "chats"
@@ -12,3 +13,9 @@ class Chat(Base):
     prompt = Column(Text)
 
     response = Column(Text)
+    
+    #title = Column(String(100))
+
+    #created_at = Column(DateTime,
+                        #default = datetime.utcnow
+                        #)

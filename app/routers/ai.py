@@ -7,6 +7,7 @@ from app.models.chat import Chat
 from app.models.user import User
 from app.services.gemini_service import generate_response
 from app.schemas.chat import ChatResponse
+from sqlalchemy import desc
 
 router = APIRouter(
     prefix = "/ai",
@@ -16,12 +17,12 @@ router = APIRouter(
 @router.post("/chat")
 def chat(
     message: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),                      #dependency injection of db 
+    current_user: User = Depends(get_current_user)      #jwt protected
 ):
 
     try:
-        ai_response = generate_response(message)
+        ai_response = generate_response(message)    #prompt given, response taken 
     
     except Exception:
         raise HTTPException(
@@ -34,8 +35,9 @@ def chat(
     chat = Chat(
         user_id = current_user.id,
         prompt = message,
-        response = ai_response
-    )
+        response = ai_response,
+        #chat_title = message[:50]
+    )                                           #adding the previous chats to db
 
     db.add(chat)
     db.commit()
@@ -46,15 +48,18 @@ def chat(
 
 @router.get(
         "/history",
-        response_model = list[ChatResponse]
+        response_model = list[ChatResponse]         #getting history of old chats 
         )
 def get_history(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    chats = db.query(Chat).filter(
-        Chat.user_id == current_user.id
-    ).all()
+    chats = (
+        db.query(Chat)
+        .filter(Chat.user_id == current_user.id)
+        .order_by(desc(Chat.created_at))
+        .all()
+    )
 
     return chats
 
