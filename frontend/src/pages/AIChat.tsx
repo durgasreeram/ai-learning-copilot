@@ -9,7 +9,7 @@ import { sendMessage } from "../services/chatService";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useSearchParams } from 'react-router-dom';
-import { RECENT_CHATS } from '../constants';
+import axios from 'axios';
 interface Message {
   id: string;
   text: string;
@@ -35,11 +35,74 @@ const CAPABILITIES = [
 
 export const AIChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [searchParams] = useSearchParams();
   const activeChatId = searchParams.get('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const loadChat = async (chatId: string) => {
+    try {
+      const token = localStorage.getItem("lumina-token");
+
+      const response = await axios.get(
+        `http://127.0.0.1:8000/ai/chat/${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setMessages([
+        {
+          id: `user-${response.data.id}`,
+          text: response.data.prompt,
+          sender: "user",
+          timestamp: new Date(),
+        },
+        {
+          id: `ai-${response.data.id}`,
+          text: response.data.response,
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (error) {
+      console.error("Failed to load chat:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeChatId) {
+      loadChat(activeChatId);
+    }
+  }, [activeChatId]);
+
+  const loadHistory = async () => {
+    try {
+      const token = localStorage.getItem("lumina-token");
+
+      const response = await axios.get(
+        "http://127.0.0.1:8000/ai/history",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setChatHistory(response.data);
+      console.log("History:", response.data);
+    } catch (error) {
+      console.error("Failed to load history:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
   useEffect(() => {
     setMessages([]);
@@ -75,6 +138,8 @@ export const AIChat: React.FC = () => {
       }
 
       const data = await sendMessage(text, token);
+
+      await loadHistory();
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -119,7 +184,7 @@ export const AIChat: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-sm font-bold text-white leading-tight">AI Learning Copilot</h1>
-                <p className="text-xs text-zinc-400">{activeChatId ? RECENT_CHATS.find(c => c.id === activeChatId)?.title : 'New Session'}</p>
+                <p className="text-xs text-zinc-400">{activeChatId ? chatHistory.find(c => c.id === activeChatId)?.title : 'New Session'}</p>
               </div>
             </div>
             <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">

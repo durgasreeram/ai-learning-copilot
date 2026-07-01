@@ -54,12 +54,34 @@ def get_history(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    chats = (
-        db.query(Chat)
-        .filter(Chat.user_id == current_user.id)
-        .order_by(desc(Chat.created_at))
-        .all()
-    )
+    chats = db.query(Chat).filter(
+        Chat.user_id == current_user.id
+    ).all()
 
     return chats
+
+
+@router.get("/chat/{chat_id}", response_model = ChatResponse)
+def get_chat(
+    chat_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    chat = (
+        db.query(Chat)
+        .filter(
+            Chat.id == chat_id,
+            Chat.user_id == current_user.id
+
+        )
+        .first()
+    )
+
+    if not chat: 
+        raise HTTPException(
+            status = 404,
+            detail = "Chat not Found"
+        )
+    
+    return chat
 

@@ -73,9 +73,3 @@ export const NAV_ITEMS = [
   },
 ] as const;
 
-export const RECENT_CHATS = [
-  { id: '1', title: 'React Hooks Explained', date: '2 hours ago' },
-  { id: '2', title: 'System Design Basics', date: 'Yesterday' },
-  { id: '3', title: 'Python Async/Await', date: '2 days ago' },
-  { id: '4', title: 'FastAPI Roadmap', date: '3 days ago' }
-];

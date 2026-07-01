@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import * as Icons from 'lucide-react';
-import { NAV_ITEMS, RECENT_CHATS, ROUTES } from '../../constants';
+import { NAV_ITEMS, ROUTES } from '../../constants';
 import { LuminaLogo } from '../ui/LuminaLogo';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  chatHistory: any[];
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ chatHistory }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [aiChatExpanded, setAiChatExpanded] = useState(true);
   const location = useLocation();
@@ -44,20 +48,20 @@ export const Sidebar: React.FC = () => {
       <nav className="flex-1 py-4 px-4 flex flex-col gap-1.5 overflow-y-auto scrollbar-none">
         {NAV_ITEMS.map((item) => {
           const IconComponent = Icons[item.icon as keyof typeof Icons] as React.ComponentType<{ className?: string, strokeWidth?: number }>;
-          
+
           if (item.name === 'AI Chat') {
             const isAIChatActive = location.pathname === ROUTES.AI_CHAT;
             return (
               <div key={item.path} className="flex flex-col relative group/nav">
                 <div
                   className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl text-[13px] transition-all duration-200 cursor-pointer
-                    ${isAIChatActive 
-                      ? 'bg-purple-500/10 text-purple-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' 
+                    ${isAIChatActive
+                      ? 'bg-purple-500/10 text-purple-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
                       : 'text-zinc-400 font-medium hover:text-zinc-100 hover:bg-white/[0.02]'
                     }`}
                   onClick={() => {
-                     if (isCollapsed) navigate(item.path);
-                     else setAiChatExpanded(!aiChatExpanded);
+                    if (isCollapsed) navigate(item.path);
+                    else setAiChatExpanded(!aiChatExpanded);
                   }}
                   title={isCollapsed ? item.name : undefined}
                 >
@@ -67,7 +71,7 @@ export const Sidebar: React.FC = () => {
                   {!isCollapsed && (
                     <>
                       <span className="flex-1 text-left">{item.name}</span>
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); navigate(item.path); }}
                         className="p-1 -mr-1 text-zinc-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-md opacity-0 group-hover/nav:opacity-100 transition-all"
                         title="New Chat"
@@ -78,23 +82,22 @@ export const Sidebar: React.FC = () => {
                     </>
                   )}
                 </div>
-                
+
                 {/* Expanded Conversation History */}
                 {!isCollapsed && aiChatExpanded && (
                   <div className="pl-9 pr-2 flex flex-col gap-0.5 mt-1 pb-1">
-                    {RECENT_CHATS.map(chat => {
+                    {chatHistory.map(chat => {
                       const isChatActive = isAIChatActive && currentChatId === chat.id;
                       return (
                         <button
                           key={chat.id}
                           onClick={() => navigate(`${ROUTES.AI_CHAT}?chat=${chat.id}`)}
-                          className={`w-full text-left px-2 py-1.5 rounded-lg text-[12.5px] truncate transition-colors border border-transparent ${
-                            isChatActive 
-                              ? 'text-purple-300 bg-purple-500/10 border-purple-500/20 font-medium' 
-                              : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
-                          }`}
+                          className={`w-full text-left px-2 py-1.5 rounded-lg text-[12.5px] truncate transition-colors border border-transparent ${isChatActive
+                            ? 'text-purple-300 bg-purple-500/10 border-purple-500/20 font-medium'
+                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]'
+                            }`}
                         >
-                          {chat.title}
+                          {chat.prompt}
                         </button>
                       );
                     })}
@@ -110,8 +113,8 @@ export const Sidebar: React.FC = () => {
               to={item.path}
               className={({ isActive }) => `
                 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl text-[13px] transition-all duration-200 group
-                ${isActive 
-                  ? 'bg-purple-500/10 text-purple-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' 
+                ${isActive
+                  ? 'bg-purple-500/10 text-purple-400 font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]'
                   : 'text-zinc-400 font-medium hover:text-zinc-100 hover:bg-white/[0.02]'
                 }
               `}
@@ -148,9 +151,9 @@ export const Sidebar: React.FC = () => {
       {/* Sidebar Footer / User Profile */}
       <div className={`p-4 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} bg-zinc-950/40 border-t border-white/[0.02] cursor-pointer hover:bg-zinc-950/60 transition-colors`}>
         <div className="w-9 h-9 rounded-full overflow-hidden border border-zinc-800 shrink-0">
-          <img 
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" 
-            alt="Durga Sreeram" 
+          <img
+            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"
+            alt="Durga Sreeram"
             className="w-full h-full object-cover"
           />
         </div>
